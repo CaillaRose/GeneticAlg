@@ -1,7 +1,15 @@
+/*------------------------------------------------------------------
+ *
+ *
+ *
+ * ----------------------------------------------------------------*/
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 
+#define ORG_LENGTH 2
 #define POPSIZE 100
 #define NUM_GENERATIONS 400
 #define MUTATION 0.001
@@ -17,8 +25,8 @@ typedef struct {
 int main ()
 {
 	int i,j,k;
-	unsigned int seed = 923859;
-	srand48(seed);
+	//unsigned int seed = 923859;
+	srand48(time(NULL));
 
 /*------------------Randomly initialize Population----------------*/
 
@@ -33,7 +41,7 @@ int main ()
 
 	organism* child[2];
 	
-	for (k=0; k<GENERATION; k++)
+	for (k=0; k<NUM_GENERATIONS; k++)
 	{
 		for (i=0; i<POPSIZE; i++)
 		{
@@ -42,6 +50,9 @@ int main ()
 		}
 
 /*----------------------Selection-----------------------------*/
+		
+		organism* parent[2];
+		int count;
 
 		for (count=0; count<2; count++)
 		{
@@ -49,7 +60,7 @@ int main ()
 			for (r=0; r<POPSIZE; r++)
 			{
 				sumFitness += population[i]->fitness;
-				float RANDOM = (float)((drand48()%1000)/999.0f)*sumFitness;	
+				int RANDOM = lrand48() % sumFitness;	
 				if (sumFitness >= RANDOM)
 				{
 					parent[count] = population[i];
@@ -59,7 +70,6 @@ int main ()
 
 /*-------------------Crossover---------------------------*/
 
-				
 		unsigned int mask[2][ORG_LENGTH];
 		unsigned int temp[4][ORG_LENGTH];
 		int crosspt,first,second,i,j;
@@ -87,14 +97,15 @@ int main ()
 			mask[0][first] = mask[0][first]>>second;
 			for (j=0; j<ORG_LENGTH; j++)
 			{
-				temp[0][j] = child[0].gene[j] & mask[0][j];
-				temp[1][j] = child[0].gene[j] & mask[1][j];
-				temp[2][j] = child[1].gene[j] & mask[0][j];
-				temp[3][j] = child[1].gene[j] & mask[1][j];
+				temp[0][j] = parent[0]->gene[j] & mask[0][j];
+				temp[1][j] = parent[0]->gene[j] & mask[1][j];
+				temp[2][j] = parent[1]->gene[j] & mask[0][j];
+				temp[3][j] = parent[1]->gene[j] & mask[1][j];
 				
-				child[0].gene[j] = temp[0][j] | temp[3][j];
-				child[1].gene[j] = temp[2][j] | temp[4][j];	
+				parent[0]->gene[j] = temp[0][j] | temp[3][j];
+				parent[1]->gene[j] = temp[2][j] | temp[4][j];	
 			}
+		}
 				
 /*--------------------Mutate Chromosome---------------------------*/
 
@@ -103,14 +114,31 @@ int main ()
 		{
 			int mutation = drand48()%(ORG_LENGTH*sizeof(int)*8);
 			int mask = 1 << (mutation%(sizeof(int)*8)-1);
-			child.gene[(int)mutation/(sizeof(int)*8)] ^= mask;
+			parent->gene[(int)mutation/(sizeof(int)*8)] ^= mask;
 		}
 
+		for (i=0; i<POPSIZE; i++)
+		{
+			population[i] = temp[i];
+		}
+	}
 
 	for (i=0; i<POPSIZE; i++)
 	{
-		population[i] = temp[i];
+		for(j=0;j<ORG_LENGTH; j++)
+		{
+			printf("%d", population[i]->gene[j]);
+		}
+		printf("\n");
+		printf("Fitness: %d\n", population[i]->fitness);
 	}
+	
+	for (i=0; i<POPSIZE; i++)
+	{
+		free(population[i]);
+	}
+	
+	free(population);
 
 	return 0;
 }
