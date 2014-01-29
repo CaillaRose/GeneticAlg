@@ -11,17 +11,18 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define NUM_GAMES 64
-#define GENERATION 1
-#define CROSSOVER 0.8
-#define MUTATION 0.001
+#define GENERATION 100
+#define CROSSOVER 0.95
+#define MUTATION 0.01
 #define MAX_SCORE 6080
 
 typedef struct
 {
-	int fitness;
-	int move;
+	unsigned int fitness;
+	unsigned int move;
 	char history[4];
 }
 pop;
@@ -85,12 +86,12 @@ void Strategy(pop* p, int total)
 
 int main(int argc, char *argv[])
 {
-	int POPSIZE = 20;	//REPLACE WITH ARGV[1]
-	int i,j,k,q,b2d,s;
+	int POPSIZE = atoi(argv[1]);	//REPLACE WITH ARGV[1]
+	int i,j,k,q,s,b2d;
+	//unsigned long int seed = 29381742375;
+	srand48(time(NULL));
 	pop* p1;
 	pop* p2;
-	unsigned int seed = 87456;
-	srand48(seed);
 
 /*---------------Allocate the memory for the players------------------*/
 
@@ -99,18 +100,21 @@ int main(int argc, char *argv[])
 	for (i=0; i<POPSIZE; i++)
 	{
 		player[i] = malloc(sizeof(pop));
-
-		for(j=0; j<4; j++)
-		{
-			player[i]->history[j] = lrand48() % 2;
-			player[i]->fitness = 0;
-		}
 	}
 
 /*-----------------------RUN THE ALGORITHM---------------------------*/	
 
 	for (k=0; k<GENERATION; k++)
 	{
+		for (i=0; i<POPSIZE; i++)
+		{
+			for(j=0; j<4; j++)
+			{
+				player[i]->history[j] = lrand48() % 2;
+				player[i]->fitness = 0;
+			}
+		}
+
 		for (i=0; i<POPSIZE; i++)
 		{
 			for (j=POPSIZE-1; j>=0; j--)
@@ -143,10 +147,10 @@ int main(int argc, char *argv[])
 		for(count=0; count<2; count++)
 		{
 			int sumFitness = 0;
-			int RANDOM = lrand48() % sumFitness;
 			for (i=0; i<POPSIZE; i++)
 			{
 				sumFitness += player[i]->fitness;
+				int RANDOM = lrand48() % sumFitness;
 				if (sumFitness >= RANDOM)
 				{
 					parent[count] =  player[i];
@@ -192,6 +196,7 @@ int main(int argc, char *argv[])
 			printf("%d", player[i]->history[j]);
 		}
 		printf("\n");
+		printf("Fitness: %d\n", player[i]->fitness);
 	}
 
 	for (i=0; i<POPSIZE; i++)
