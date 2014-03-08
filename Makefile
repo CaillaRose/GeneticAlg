@@ -6,6 +6,7 @@ dilemma: dilemma.c
 
 all: genetic dilemma
 
+
 genetic-test: genetic.c
 	gcc genetic.c -o genetic;./genetic 100 1000 0.95 0.01
 

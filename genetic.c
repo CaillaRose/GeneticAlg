@@ -21,6 +21,7 @@ typedef struct {
 char *int2bin(int a, char *buffer, int buf_size);
 int Fitness(unsigned int gene[]);
 
+
 int main (int argc, char* argv[])
 {
 	int i,j,k;
